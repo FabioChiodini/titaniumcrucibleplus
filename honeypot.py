@@ -11,9 +11,7 @@ if 'LOG_HOST' not in os.environ:
 host = os.environ['LOG_HOST']
 API_ENDPOINT = os.environ['LOG_HOST']
 
-data1 = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
 
-datak = {'honeypotsourceip':data1}
 
 test_logger = logging.getLogger('python-logstash-logger')
 test_logger.setLevel(logging.INFO)
@@ -22,6 +20,12 @@ test_logger.addHandler(logstash.TCPLogstashHandler(host, 5000, version=1))
 app = Flask(__name__)
 
 def log_request(req):
+    
+    data1 = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+
+    datak = {'honeypotsourceip':data1}
+    requests.post(url = API_ENDPOINT, data = datak)
+    
     extra = {
         'ip': request.environ.get('HTTP_X_REAL_IP', request.remote_addr),
         'url': req.full_path,
@@ -34,8 +38,7 @@ def log_request(req):
 @app.route('/<path:path>')
 
 def honey(path):
-    #log_request(request)
-    requests.post(url = API_ENDPOINT, data = datak)
+    log_request(request)
     return jsonify({'result': 'ok'})
     # Test to return the client ip
     # return request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
